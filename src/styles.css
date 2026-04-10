@@ -1,4 +1,110 @@
-.App {
-  font-family: sans-serif;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  color: white;
+}
+
+.container {
+  max-width: 500px;
+  margin: auto;
+  padding: 20px;
+}
+
+h1 {
   text-align: center;
+  margin-bottom: 20px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+label {
+  display: block;
+  text-align: right;
+  margin-top: 10px;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-top: 5px;
+  border-radius: 12px;
+  border: none;
+  font-size: 16px;
+  text-align: right; /* 👈 מספרים בצד ימין */
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 15px;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.results {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.result-box {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  text-align: right;
+}
+
+.value {
+  direction: ltr;
+  text-align: right;
+}
+
+.result-box.highlight {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+.lead-box {
+  margin-top: 25px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 20px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.sub {
+  font-size: 14px;
+  color: #cbd5f5;
+}
+
+.urgent {
+  font-size: 13px;
+  color: #facc15;
+  margin-bottom: 10px;
+}
+
+.success {
+  margin-top: 10px;
+  font-size: 13px;
+  color: #4ade80;
+}
+
+.cta {
+  background: linear-gradient(90deg, #3b82f6, #2563eb);
 }
