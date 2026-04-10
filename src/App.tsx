@@ -1,255 +1,142 @@
 import { useState } from "react";
+import "./styles.css";
 
 export default function App() {
-  const [loan, setLoan] = useState(300000);
-  const [rate, setRate] = useState(5);
-  const [years, setYears] = useState(10);
+  const [loan, setLoan] = useState("200,000");
+  const [rate, setRate] = useState("5");
+  const [years, setYears] = useState("10");
 
-  const [monthly, setMonthly] = useState(null);
-  const [total, setTotal] = useState(null);
-  const [interest, setInterest] = useState(null);
+  const [monthly, setMonthly] = useState<number | null>(null);
+  const [total, setTotal] = useState<number | null>(null);
+  const [interest, setInterest] = useState<number | null>(null);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
-  const WEBHOOK = "https://hook.eu1.make.com/u8vaclr33g6j7uyyvcg17khqhtdlb6fc";
+  const formatNumber = (value: string) => {
+    const num = value.replace(/,/g, "");
+    if (!num) return "";
+    return Number(num).toLocaleString("en-US");
+  };
 
-  const format = (n) =>
-    new Intl.NumberFormat("he-IL", {
-      style: "currency",
-      currency: "ILS",
-      maximumFractionDigits: 0,
-    }).format(n);
+  const parseNumber = (value: string) => {
+    return Number(value.replace(/,/g, ""));
+  };
 
   const calculate = () => {
-    const r = rate / 100 / 12;
-    const n = years * 12;
+    const L = parseNumber(loan);
+    const r = Number(rate) / 100 / 12;
+    const n = Number(years) * 12;
 
-    const m = (loan * (r * Math.pow(1 + r, n))) / (Math.pow(1 + r, n) - 1);
+    const m = (L * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
     const t = m * n;
 
     setMonthly(m);
     setTotal(t);
-    setInterest(t - loan);
+    setInterest(t - L);
   };
 
   const sendLead = async () => {
-    await fetch(WEBHOOK, {
+    const data = {
+      name,
+      phone,
+      loan,
+      rate,
+      years,
+      date: new Date().toLocaleString(),
+    };
+
+    await fetch("https://hook.eu1.make.com/u8vaclr33g6j7uyyvcg17khqhtdlb6fc", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, phone, loan }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
     });
 
+    const message = `🔥 ליד חדש!
+שם: ${name}
+טלפון: ${phone}
+סכום: ${loan}`;
+
     window.open(
-      "https://wa.me/972501234567?text=שלום אני רוצה הצעה להלוואה",
+      `https://wa.me/972501234567?text=${encodeURIComponent(message)}`,
       "_blank"
     );
   };
 
-  const interestPercent = total ? Math.round((interest / total) * 100) : 0;
-
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>💸 מחשבון הלוואה חכם</h1>
+    <div className="container" dir="rtl">
+      <h1>💸 מחשבון הלוואות חכם</h1>
 
-        {/* סליידרים */}
-        <Slider
-          label="סכום הלוואה"
+      <div className="card">
+        <label>סכום הלוואה</label>
+        <input
           value={loan}
-          setValue={setLoan}
-          min={50000}
-          max={3000000}
-          step={1000}
-        />
-        <Slider
-          label="ריבית (%)"
-          value={rate}
-          setValue={setRate}
-          min={1}
-          max={12}
-          step={0.1}
-        />
-        <Slider
-          label="שנים"
-          value={years}
-          setValue={setYears}
-          min={1}
-          max={30}
+          onChange={(e) => setLoan(formatNumber(e.target.value))}
         />
 
-        <button style={styles.button} onClick={calculate}>
-          חשב עכשיו
+        <label>ריבית שנתית (%)</label>
+        <input value={rate} onChange={(e) => setRate(e.target.value)} />
+
+        <label>משך הלוואה (שנים)</label>
+        <input value={years} onChange={(e) => setYears(e.target.value)} />
+
+        <button onClick={calculate}>חשב עכשיו</button>
+      </div>
+
+      {monthly && (
+        <div className="results">
+          <div className="result-box">
+            <span className="label">תשלום חודשי</span>
+            <strong className="value">
+              ₪{Math.round(monthly).toLocaleString()}
+            </strong>
+          </div>
+
+          <div className="result-box">
+            <span className="label">סה״כ תשלומים</span>
+            <strong className="value">
+              ₪{Math.round(total!).toLocaleString()}
+            </strong>
+          </div>
+
+          <div className="result-box highlight">
+            <span className="label">ריבית שתשלם</span>
+            <strong className="value">
+              ₪{Math.round(interest!).toLocaleString()}
+            </strong>
+          </div>
+        </div>
+      )}
+
+      <div className="lead-box">
+        <h2>🔥 אפשר לחסוך לך אלפי שקלים</h2>
+
+        <p className="sub">מאות לקוחות כבר הורידו את ההחזר החודשי שלהם 💸</p>
+
+        <p className="urgent">⏳ בדיקת זכאות חינם לזמן מוגבל</p>
+
+        <input
+          placeholder="שם מלא"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <input
+          placeholder="טלפון"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+        />
+
+        <button className="cta" onClick={sendLead}>
+          🚀 שלח ונציג יחזור אליך בהקדם
         </button>
 
-        {monthly && (
-          <>
-            <div style={styles.mainResult}>
-              {format(monthly)}
-              <span> לחודש</span>
-            </div>
-
-            {/* בר ריבית */}
-            <div style={styles.bar}>
-              <div
-                style={{
-                  ...styles.barFill,
-                  width: `${interestPercent}%`,
-                }}
-              />
-            </div>
-            <p style={{ fontSize: 13 }}>
-              {interestPercent}% מהתשלום הוא ריבית 😳
-            </p>
-
-            <div style={styles.results}>
-              <Box label="סה״כ תשלום" value={format(total)} />
-              <Box label="ריבית" value={format(interest)} />
-            </div>
-          </>
+        {name && phone && (
+          <div className="success">✔ פרטיך מוכנים – לחץ לשליחה</div>
         )}
-
-        {/* לידים */}
-        <div style={styles.leadBox}>
-          <h3>🔥 אפשר לחסוך לך אלפי שקלים</h3>
-
-          <input
-            style={styles.input}
-            placeholder="שם"
-            onChange={(e) => setName(e.target.value)}
-          />
-
-          <input
-            style={styles.input}
-            placeholder="טלפון"
-            onChange={(e) => setPhone(e.target.value)}
-          />
-
-          <button style={styles.cta} onClick={sendLead}>
-            קבל הצעה משתלמת 🚀
-          </button>
-        </div>
       </div>
     </div>
   );
 }
-
-function Slider({ label, value, setValue, min, max, step }) {
-  return (
-    <div style={{ marginBottom: 15 }}>
-      <label style={{ fontSize: 14 }}>
-        {label}: {value.toLocaleString()}
-      </label>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => setValue(+e.target.value)}
-        style={{ width: "100%" }}
-      />
-    </div>
-  );
-}
-
-function Box({ label, value }) {
-  return (
-    <div style={styles.resultBox}>
-      <span>{label}</span>
-      <strong>{value}</strong>
-    </div>
-  );
-}
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(135deg,#020617,#0f172a)",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    fontFamily: "Arial",
-    color: "white",
-    direction: "rtl",
-  },
-
-  card: {
-    background: "rgba(255,255,255,0.05)",
-    backdropFilter: "blur(20px)",
-    padding: 25,
-    borderRadius: 20,
-    width: 360,
-  },
-
-  title: {
-    textAlign: "center",
-    marginBottom: 15,
-  },
-
-  button: {
-    width: "100%",
-    padding: 12,
-    borderRadius: 12,
-    border: "none",
-    background: "#22c55e",
-    color: "white",
-    marginTop: 10,
-  },
-
-  mainResult: {
-    textAlign: "center",
-    fontSize: 28,
-    marginTop: 15,
-  },
-
-  bar: {
-    height: 8,
-    background: "#1e293b",
-    borderRadius: 10,
-    marginTop: 10,
-  },
-
-  barFill: {
-    height: "100%",
-    background: "#ef4444",
-    borderRadius: 10,
-  },
-
-  results: {
-    marginTop: 15,
-    display: "flex",
-    justifyContent: "space-between",
-  },
-
-  resultBox: {
-    background: "#1e293b",
-    padding: 10,
-    borderRadius: 10,
-    width: "48%",
-    display: "flex",
-    flexDirection: "column",
-    gap: 5,
-  },
-
-  leadBox: {
-    marginTop: 20,
-    display: "flex",
-    flexDirection: "column",
-    gap: 10,
-  },
-
-  input: {
-    padding: 10,
-    borderRadius: 10,
-    border: "none",
-  },
-
-  cta: {
-    padding: 12,
-    borderRadius: 12,
-    border: "none",
-    background: "#3b82f6",
-    color: "white",
-  },
-};
